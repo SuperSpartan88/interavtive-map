@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Clickable Continents Map</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes, minimal-ui">
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        font-size: 12px;
+        padding: 0;
+        margin: 0;
+      }
+
+      #chartdiv {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+
+    <script src="https://cdn.amcharts.com/lib/editor/map/5/viewer.js"></script>
+    <div id="chartdiv"></div>
+    <script>
+      am5viewer.create("chartdiv", {
+        "settings": {
+          "editor": {
+            "theme": "dark",
+            "userData": {
+              "projection": "geoMercator",
+              "geodata": "continentsLow.json"
+            },
+            "themeTags": ["dark"],
+            "__parse": true
+          },
+          "editor.map": {
+            "projection": "geoOrthographic",
+            "panX": "rotateX",
+            "panY": "rotateY",
+            "rotationX": 0,
+            "rotationY": 0,
+            "zoomControl": {
+              "type": "ZoomControl",
+              "settings": {
+                "visible": true,
+                "position": "absolute",
+                "layout": { "type": "VerticalLayout" },
+                "themeTags": ["zoomtools"],
+                "layer": 30
+              }
+            },
+            "background": {
+              "type": "Rectangle",
+              "settings": {
+                "fill": { "type": "Color", "value": "#1a1a1a" },
+                "fillOpacity": 1
+              }
+            },
+            "__parse": true,
+            "homeZoomLevel": 0
+          },
+          "editor.polygonSeries": {
+            "id": "polygonseries",
+            "valueField": "value",
+            "geometryField": "geometry",
+            "idField": "id"
+          }
+        },
+        "data": {
+          "editor.polygonSeries": [
+            { "id": "NA", "name": "North America", "link": "https://www.handicaphelp.net/northamerica/" },
+            { "id": "SA", "name": "South America", "link": "https://www.handicaphelp.net/southamerica/" },
+            { "id": "EU", "name": "Europe", "link": "https://www.handicaphelp.net/europe/" },
+            { "id": "AF", "name": "Africa", "link": "https://www.handicaphelp.net/africa/" },
+            { "id": "AS", "name": "Asia", "link": "https://www.handicaphelp.net/asia/" },
+            { "id": "OC", "name": "Oceania", "link": "https://www.handicaphelp.net/oceania" },
+          ]
+        },
+        "onReady": function (root) {
+          const polygonSeries = root.series.getIndex(0); // Get polygon series
+          polygonSeries.mapPolygons.template.events.on("click", function (event) {
+            const data = event.target.dataItem.dataContext;
+            if (data && data.link) {
+              window.open(data.link, "_blank");
+            }
+          });
+
+          // Set hover state
+          polygonSeries.mapPolygons.template.states.create("hover", {
+            fill: am5.color("#ffd700")
+          });
+
+          // Tooltip
+          polygonSeries.mapPolygons.template.set("tooltipText", "{name}");
+        }
+      });
+    </script>
+  </body>
+</html>
