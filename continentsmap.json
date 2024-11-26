@@ -43,7 +43,7 @@ am5viewer.create("chartdiv", {
       "theme": "dark",
       "userData": {
         "projection": "geoMercator",
-        "geodata": "continentsLow"
+        "geodata": "continentsmap"
       },
       "themeTags": [
         "dark"
@@ -109,7 +109,7 @@ am5viewer.create("chartdiv", {
       "rotationX": 93.75258883850464,
       "rotationY": -31.695750201498807,
       "__parse": true,
-      "homeZoomLevel": 1,
+      "homeZoomLevel": -1,
       "homeGeoPoint": {
         "longitude": -93.89010050082109,
         "latitude": 31.51946883960558
