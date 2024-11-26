@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8" />
-    <title>Clickable Continents Map</title>
-    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes, minimal-ui">
+    <meta charset="UTF-8">
+    <title>Clickable Regions Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
         font-size: 12px;
         padding: 0;
         margin: 0;
+        background-color: #1a1a1a;
       }
 
       #chartdiv {
@@ -20,81 +21,85 @@
   </head>
   <body>
 
-    <script src="https://cdn.amcharts.com/lib/editor/map/5/viewer.js"></script>
     <div id="chartdiv"></div>
+
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/region/world/worldRegionsLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Dark.js"></script>
+
     <script>
-      am5viewer.create("chartdiv", {
-        "settings": {
-          "editor": {
-            "theme": "dark",
-            "userData": {
-              "projection": "geoMercator",
-              "geodata": "continentsmap.json"
-            },
-            "themeTags": ["dark"],
-            "__parse": true
-          },
-          "editor.map": {
-            "projection": "geoOrthographic",
-            "panX": "rotateX",
-            "panY": "rotateY",
-            "rotationX": 0,
-            "rotationY": 0,
-            "zoomControl": {
-              "type": "ZoomControl",
-              "settings": {
-                "visible": false,
-                "position": "absolute",
-                "layout": { "type": "VerticalLayout" },
-                "themeTags": ["zoomtools"],
-                "layer": 30
-              }
-            },
-            "background": {
-              "type": "Rectangle",
-              "settings": {
-                "fill": { "type": "Color", "value": "#1a1a1a" },
-                "fillOpacity": 1
-              }
-            },
-            "__parse": true,
-            "homeZoomLevel": -10
-          },
-          "editor.polygonSeries": {
-            "id": "polygonseries",
-            "valueField": "value",
-            "geometryField": "geometry",
-            "idField": "id"
-          }
-        },
-        "data": {
-          "editor.polygonSeries": [
-            { "id": "NA", "name": "North America", "link": "https://www.handicaphelp.net/northamerica/" },
-            { "id": "SA", "name": "South America", "link": "https://www.handicaphelp.net/southamerica/" },
-            { "id": "EU", "name": "Europe", "link": "https://www.handicaphelp.net/europe/" },
-            { "id": "AF", "name": "Africa", "link": "https://www.handicaphelp.net/africa/" },
-            { "id": "AS", "name": "Asia", "link": "https://www.handicaphelp.net/asia/" },
-            { "id": "OC", "name": "Oceania", "link": "https://www.handicaphelp.net/oceania" },
-          ]
-        },
-        "onReady": function (root) {
-          const polygonSeries = root.series.getIndex(0); // Get polygon series
-          polygonSeries.mapPolygons.template.events.on("click", function (event) {
-            const data = event.target.dataItem.dataContext;
-            if (data && data.link) {
-              window.open(data.link, "_blank");
+      am5.ready(function () {
+        // Root element
+        var root = am5.Root.new("chartdiv");
+
+        // Set themes
+        root.setThemes([am5themes_Dark.new(root)]);
+
+        // Create map chart
+        var chart = root.container.children.push(
+          am5map.MapChart.new(root, {
+            panX: "rotateX",
+            projection: am5map.geoOrthographic(),
+            layout: root.verticalLayout
+          })
+        );
+
+        // Add polygon series for regions
+        var polygonSeries = chart.series.push(
+          am5map.MapPolygonSeries.new(root, {
+            geoJSON: am5geodata_region_world_worldRegionsLow
+          })
+        );
+
+        // Add hover state
+        polygonSeries.mapPolygons.template.states.create("hover", {
+          fill: am5.color("#ffd700") // Highlight color
+        });
+
+        // Add tooltips
+        polygonSeries.mapPolygons.template.set("tooltipText", "{name}");
+
+        // Define data for clickable regions
+        var regionData = {
+          "002": "https://www.handicaphelp.net/africa", // Africa
+          "019": "https://www.handicaphelp.net/northamerica", // Americas
+          "150": "https://www.handicaphelp.net/europe", // Europe
+          "142": "https://www.handicaphelp.net/asia", // Asia
+          "009": "https://www.handicaphelp.net/oceania" // Oceania
+        };
+
+        // Bind data to polygons
+        polygonSeries.data.setAll([
+          { id: "002", name: "Africa", link: "https://www.handicaphelp.net/africa" },
+          { id: "019", name: "Americas", link: "https://www.handicaphelp.net/northamerica" },
+          { id: "150", name: "Europe", link: "https://www.handicaphelp.net/europe" },
+          { id: "142", name: "Asia", link: "https://www.handicaphelp.net/asia" },
+          { id: "009", name: "Oceania", link: "https://www.handicaphelp.net/oceania" }
+        ]);
+
+        // Add click event
+        polygonSeries.mapPolygons.template.events.on("click", function (ev) {
+          var dataItem = ev.target.dataItem;
+          if (dataItem) {
+            var link = dataItem.dataContext.link; // Get link from data context
+            if (link) {
+              window.location.href = link; // Open link in the same window
+            } else {
+              console.log("No link found for this region");
             }
-          });
+          }
+        });
 
-          // Set hover state
-          polygonSeries.mapPolygons.template.states.create("hover", {
-            fill: am5.color("#ffd700")
-          });
-
-          // Tooltip
-          polygonSeries.mapPolygons.template.set("tooltipText", "{name}");
-        }
+        // Rotate animation
+        chart.animate({
+          key: "rotationX",
+          to: 360,
+          duration: 30000,
+          loops: Infinity
+        });
       });
     </script>
+
   </body>
 </html>
